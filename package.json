@@ -7,6 +7,6 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "ltijs": "^6.5.3"
+    "ltijs": "^5.7.2"
   }
 }
