@@ -36,14 +36,20 @@ await lti.registerPlatform({
   accesstokenEndpoint: 'https://sandbox.moodledemo.net/mod/lti/token.php',
   authConfig: {
     method: 'JWK_SET',
-    keysetUrl: 'https://sandbox.moodledemo.net/mod/lti/certs.php'
+    key: 'https://sandbox.moodledemo.net/mod/lti/certs.php'
   }
 })
 
-  // Mount LTI app and start server
-  app.use('/lti', lti.app)
-  const PORT = process.env.PORT || 3000
-  app.listen(PORT, () => console.log(`LTI 1.3 tool listening on port ${PORT}!`))
+app.use('/lti', lti.app)
+
+// Root URL route
+app.get('/', (req, res) => {
+  res.send('Welcome to the LTI 1.3 Tool!');
+})
+
+// Start the server
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => console.log(`LTI 1.3 tool listening on port ${PORT}!`))
 }
 
 setup()
