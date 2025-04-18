@@ -11,6 +11,6 @@ services:
     region: oregon  # Change to your desired region
     envVars:
       - key: DATABASE_URL
-        sync: false  # Add this manually in Render Dashboard or Secrets
+        sync: false  # Add this manually in Render Dashboard or Secrets eeeeeeeeee
       - key: NODE_VERSION
         value: 20
