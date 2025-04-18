@@ -36,7 +36,7 @@ await lti.registerPlatform({
   accesstokenEndpoint: 'https://sandbox.moodledemo.net/mod/lti/token.php',
   authConfig: {
     method: 'JWK_SET',
-    key: 'https://sandbox.moodledemo.net/mod/lti/certs.php'
+    keysetUrl: 'https://sandbox.moodledemo.net/mod/lti/certs.php'
   }
 })
 
