@@ -30,7 +30,7 @@ const setup = async () => {
 
   // Register the Moodle platform
 await lti.registerPlatform({
-  url: 'https://sandbox.moodledemo.net/', // <-- fix here!
+  url: 'https://sandbox.moodledemo.net', // <-- fix here!
   name: 'Moodle Demo',
   clientId: 'YrhUuY3LG4Oh1AF',
   authenticationEndpoint: 'https://sandbox.moodledemo.net/mod/lti/auth.php',
