@@ -1,43 +1,31 @@
 const path = require('path')
 const express = require('express')
-const lti = require('ltijs').Provider
+const { Provider } = require('ltijs')
+require('dotenv').config()
 
-// Create Express app
-const app = express()
-
-// Setup LTI Provider
-lti.setup('EXAMPLE_KEY',  // Use a secure secret in production
-  {
-    url: process.env.DATABASE_URL,  // MongoDB connection string
-  },
-  {
-    appRoute: '/',         // Root route for landing page
-    loginRoute: '/lti/login',   // Initiate login
-    cookies: {
-      secure: true,
-      sameSite: 'None'
-    },
-    devMode: false
+const lti = new Provider('EXAMPLE_KEY', {
+  url: process.env.DATABASE_URL, // MongoDB URL (required for platform registration persistence)
+}, {
+  staticPath: path.join(__dirname, './public'),
+  cookies: {
+    secure: true,
+    sameSite: 'None'
   }
-)
-
-// Serve a simple welcome page on "/"
-app.get('/', (req, res) => {
-  res.send('Welcome to the LTI 1.3 Tool!')
 })
 
-// LTI Launch Handler
+const app = express()
+
+// LTI Launch route
 lti.onConnect(async (token, req, res) => {
-  return res.send(`Hello ${token.userInfo.name}! You launched from ${token.platformContext.context.title}`)
+  return res.send(`✅ Hello ${token.userInfo.name}! You launched the tool from "${token.platformContext.context.title}"`)
 })
 
 const setup = async () => {
-  // ✅ Start LTI server in serverless mode and pass express app
-  await lti.deploy({ serverless: true, app })
+  await lti.deploy({ serverless: true })
 
-  // ✅ Register Moodle Platform
+  // Register the Moodle platform (make sure clientId is correct)
   await lti.registerPlatform({
-    url: 'https://sandbox.moodledemo.net/',  // NOTE: trailing slash
+    url: 'https://sandbox.moodledemo.net',
     name: 'Moodle Demo',
     clientId: 'YrhUuY3LG4Oh1AF',
     authenticationEndpoint: 'https://sandbox.moodledemo.net/mod/lti/auth.php',
@@ -48,9 +36,17 @@ const setup = async () => {
     }
   })
 
-  // ✅ Start express server
+  // Serve ltijs app routes like login, launch, JWKS, etc.
+  app.use('/lti', lti.app)
+
+  // Optional root route
+  app.get('/', (req, res) => {
+    res.send('🌟 Welcome to the LTI 1.3 Tool!')
+  })
+
+  // Start server
   const PORT = process.env.PORT || 3000
-  app.listen(PORT, () => console.log(`LTI tool listening on port ${PORT}`))
+  app.listen(PORT, () => console.log(`🚀 LTI 1.3 tool listening on port ${PORT}`))
 }
 
 setup()
