@@ -2,9 +2,10 @@ const path = require('path')
 const express = require('express')
 const lti = require('ltijs').Provider
 
-lti.setup('EXAMPLE_KEY',
+// Setup LTI Provider
+lti.setup('EXAMPLE_KEY',  // Replace this key with a strong secret
   {
-    url: 'mongodb://localhost:27017/lti13'
+    url: process.env.DATABASE_URL,  // e.g. MongoDB Atlas connection string
   },
   {
     staticPath: path.join(__dirname, './public'),
@@ -17,11 +18,16 @@ lti.setup('EXAMPLE_KEY',
 
 const app = express()
 
+// Handle LTI Launch
 lti.onConnect(async (token, req, res) => {
   return res.send(`Hello ${token.userInfo.name}! You launched the tool from ${token.platformContext.context.title}`)
 })
 
 const setup = async () => {
+  // ✅ First deploy
+  await lti.deploy({ serverless: true })
+
+  // ✅ Then register the platform
   await lti.registerPlatform({
     url: 'https://sandbox.moodledemo.net',
     name: 'Moodle Demo',
@@ -34,9 +40,10 @@ const setup = async () => {
     }
   })
 
-  await lti.deploy({ serverless: true })
+  // Mount LTI app and start server
   app.use('/lti', lti.app)
-  app.listen(3000, () => console.log('LTI 1.3 tool listening on port 3000!'))
+  const PORT = process.env.PORT || 3000
+  app.listen(PORT, () => console.log(`LTI 1.3 tool listening on port ${PORT}!`))
 }
 
 setup()
