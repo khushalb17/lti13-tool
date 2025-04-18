@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: lti13-tool
+    env: node
+    plan: free
+    buildCommand: yarn
+    startCommand: node index.js
+    autoDeploy: true
+    branch: main
+    runtime: node
+    region: oregon  # Change to your desired region
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # Add this manually in Render Dashboard or Secrets
+      - key: NODE_VERSION
+        value: 20
