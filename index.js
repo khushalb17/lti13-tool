@@ -2,14 +2,10 @@ const path = require('path')
 const express = require('express')
 const lti = require('ltijs').Provider
 
-// Initialize Express
-const app = express()
-
 // Setup LTI Provider
-lti.setup('EXAMPLE_KEY',  // 🔑 Replace with a secure secret!
-  {
-    url: process.env.DATABASE_URL,
-  },
+lti.setup(
+  process.env.LTI_KEY || 'EXAMPLE_KEY', // Use env var or fallback
+  { url: process.env.DATABASE_URL },    // MongoDB connection string
   {
     staticPath: path.join(__dirname, './public'),
     cookies: {
@@ -19,17 +15,22 @@ lti.setup('EXAMPLE_KEY',  // 🔑 Replace with a secure secret!
   }
 )
 
+const app = express()
+
+// Route: LTI Launch
 lti.onConnect(async (token, req, res) => {
-  return res.send(`✅ Hello ${token.userInfo.name}! You launched from ${token.platformContext.context.title}.`)
+  const name = token.userInfo.name || 'LTI user'
+  const course = token.platformContext?.context?.title || 'your LMS'
+  return res.send(`✅ Hello ${name}! You launched the tool from <strong>${course}</strong>.`)
 })
 
 const setup = async () => {
-  // 🟩 Deploy tool in serverless mode
-  await lti.deploy({ app, serverless: true })
+  // Deploy ltijs server in serverless mode (for Render)
+  await lti.deploy({ serverless: true })
 
-  // ✅ Register Moodle Sandbox platform
+  // Register Moodle platform (make sure this matches your LMS)
   await lti.registerPlatform({
-    url: 'https://sandbox.moodledemo.net',
+    url: 'https://sandbox.moodledemo.net', // NO trailing slash!
     name: 'Moodle Demo',
     clientId: 'YrhUuY3LG4Oh1AF',
     authenticationEndpoint: 'https://sandbox.moodledemo.net/mod/lti/auth.php',
@@ -40,14 +41,19 @@ const setup = async () => {
     }
   })
 
-  // ✅ Express route for root
+  // Add ltijs express app to route
+  app.use('/lti', lti.app)
+
+  // Optional root route
   app.get('/', (req, res) => {
     res.send('👋 Welcome to the LTI 1.3 Tool!')
   })
 
-  // ✅ Listen for requests
+  // Start the server
   const PORT = process.env.PORT || 3000
-  app.listen(PORT, () => console.log(`🚀 LTI 1.3 Tool running on port ${PORT}`))
+  app.listen(PORT, () => {
+    console.log(`🚀 LTI 1.3 tool listening at http://localhost:${PORT}`)
+  })
 }
 
 setup()
